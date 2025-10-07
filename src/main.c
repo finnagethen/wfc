@@ -1,14 +1,19 @@
 /*
  * Wave Function Collapse Algorithm
  *
- * Use a image as input to generate a new image with similar patterns.
+ * Use an image as input to generate a new image with similar patterns.
  */
 
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
+
 #include <assert.h>
 #include <stdio.h> 
 #include <unistd.h>
+
+#include "wfc/wfc.h"
+#include "wfc/overlapping.h"
+
 
 typedef struct state {
     SDL_Window* window;
@@ -19,7 +24,9 @@ typedef struct state {
         int width;
         int height;
     } size;
-
+    
+    wfc_s wfc;
+    
     bool quit;
 } state_s;
 
@@ -76,9 +83,30 @@ int main(int argc, char* const* argv) {
         &state.window, &state.renderer)
     );
 
-    state.texture = IMG_LoadTexture(state.renderer, image_path);
+    state.texture = SDL_CreateTexture(state.renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, state.size.width, state.size.height);
     assert(state.texture);
 
+    // wfc init
+    wfc_init(&state.wfc, &(wfc_desc_s){
+        .path = image_path, 
+        .output_width = output_width,
+        .output_height = output_height,
+        .tile_size = 3,
+    });
+    overlapping_extract_tiles(state.wfc.input_surface, state.wfc.tiles, state.wfc.num_tiles, state.wfc.tile_size);
+    overlapping_calc_adjacency_rules(state.wfc.tiles, state.wfc.num_tiles, 3);
+    
+    // show tiles for testing
+    printf("Done extracting %zu tiles\n", state.wfc.num_tiles);
+    tile_s tile = state.wfc.tiles[20];
+    list_s* adj = tile.adjacents[DIR_RIGHT];
+    int count = 0;
+    while (adj) {
+        size_t* id = (size_t*)adj->data;
+        grid_set_subsurface(&state.wfc.grid, state.wfc.tiles[*id].surface, 0, count++);
+        adj = adj->next;
+    }
+    
     // main loop
     SDL_Event event;
     while (!state.quit) {
@@ -97,17 +125,19 @@ int main(int argc, char* const* argv) {
                     break;
             }
         }
+        
+        // updating
+        SDL_UpdateTexture(state.texture, NULL, state.wfc.grid.surface->pixels, state.wfc.grid.surface->pitch);
 
         // rendering
         SDL_SetRenderDrawColor(state.renderer, 255, 0, 255, 255);
         SDL_RenderClear(state.renderer);
-        
         SDL_RenderTexture(state.renderer, state.texture, NULL, NULL);
-
         SDL_RenderPresent(state.renderer);
     }
 
     // deinit
+    wfc_deinit(&state.wfc);
     SDL_DestroyTexture(state.texture);
     SDL_DestroyWindow(state.window);
     SDL_DestroyRenderer(state.renderer);

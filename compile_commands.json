@@ -1,0 +1,22 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-g",
+      "-O2",
+      "-Wextra",
+      "-Wall",
+      "-Wpedantic",
+      "-fsanitize=undefined",
+      "-fsanitize=address",
+      "-I./src",
+      "-c",
+      "-o",
+      "build/main.o",
+      "src/main.c"
+    ],
+    "directory": "/home/finn/Dokumente/Programmieren/c/wfc",
+    "file": "/home/finn/Dokumente/Programmieren/c/wfc/src/main.c",
+    "output": "/home/finn/Dokumente/Programmieren/c/wfc/build/main.o"
+  }
+]
