@@ -97,14 +97,6 @@ int main(int argc, char* const* argv) {
     overlapping_extract_tiles(state.wfc.input_surface, state.wfc.tiles, state.wfc.num_tiles, state.wfc.tile_size);
     overlapping_calc_adjacency_rules(state.wfc.tiles, state.wfc.num_tiles, 3);
     
-    // show tiles for testing
-    for (size_t i = 0; i < state.wfc.grid.num_cells; i++) {
-        cell_s* cell = &state.wfc.grid.cells[i];
-        size_t tile_idx = i % state.wfc.num_tiles;
-        cell->possible_tile_ids = list_push_back(cell->possible_tile_ids, &state.wfc.tiles[tile_idx].id);
-        cell->is_collapsed = true;    
-    }
-    
     // main loop
     SDL_Event event;
     while (!state.quit) {
@@ -125,7 +117,7 @@ int main(int argc, char* const* argv) {
         }
         
         // updating
-        grid_update(&state.wfc.grid, state.wfc.tiles, state.wfc.num_tiles);
+        wfc_update(&state.wfc);
         SDL_UpdateTexture(state.texture, NULL, state.wfc.grid.surface->pixels, state.wfc.grid.surface->pitch);
 
         // rendering

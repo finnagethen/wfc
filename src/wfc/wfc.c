@@ -2,6 +2,21 @@
 #include <SDL3_image/SDL_image.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <time.h>
+
+static void wfc_cells_init(wfc_s* wfc) {
+    assert(wfc);
+
+    for (size_t i = 0; i < wfc->grid.num_cells; i++) {
+        cell_s* cell = &wfc->grid.cells[i];
+        cell->possible_tile_ids = NULL;
+        for (size_t t = 0; t < wfc->num_tiles; t++) {
+            cell->possible_tile_ids = list_push_back(cell->possible_tile_ids, &wfc->tiles[t].id);
+        }
+        cell->entropy = wfc->num_tiles;
+        cell->is_collapsed = false;
+    }
+}
 
 void wfc_init(wfc_s* wfc, const wfc_desc_s* desc) {
     assert(wfc);
@@ -26,6 +41,10 @@ void wfc_init(wfc_s* wfc, const wfc_desc_s* desc) {
         .height = desc->output_height,
         .cell_size = desc->tile_size,
     });
+
+    wfc_cells_init(wfc);
+
+    srand((unsigned int)time(NULL));
 }
 
 void wfc_deinit(wfc_s* wfc) {
@@ -44,4 +63,60 @@ void wfc_deinit(wfc_s* wfc) {
     grid_deinit(&wfc->grid);
 
     *wfc = (wfc_s){ 0 };
+}
+
+static cell_s* wfc_get_next_cell(wfc_s* wfc) {
+    assert(wfc);
+
+    cell_s* best_cell = NULL;
+
+    for (size_t i = 0; i < wfc->grid.num_cells; i++) {
+        cell_s* cell = &wfc->grid.cells[i];
+        if (cell->is_collapsed)
+            continue;
+        
+        if (!best_cell || cell->entropy < best_cell->entropy)
+            best_cell = cell;
+    }
+
+    return best_cell;
+}
+
+static void wfc_collapse_cell(wfc_s* wfc, cell_s* cell) {
+    assert(wfc && cell);
+    assert(cell->possible_tile_ids);
+    assert(cell->entropy > 0);
+    
+    // choose a random tile from the possible tiles
+    size_t choice = rand() % cell->entropy;
+    list_s* curr = cell->possible_tile_ids;
+    for (size_t i = 0; i < choice; i++) {
+        curr = curr->next;
+        assert(curr);
+    }
+
+    // collapse to that tile
+    size_t* chosen_tile_id = (size_t*)curr->data;
+    list_free(cell->possible_tile_ids);
+    cell->possible_tile_ids = NULL;
+    cell->possible_tile_ids = list_push_back(cell->possible_tile_ids, chosen_tile_id);
+    cell->is_collapsed = true;
+    cell->entropy = 0;
+}
+
+static void wfc_propagate_constraints(wfc_s* wfc, cell_s* cell) {
+    assert(wfc && cell);
+    // TODO
+}
+
+void wfc_update(wfc_s* wfc) {
+    assert(wfc);
+    
+    cell_s* cell = wfc_get_next_cell(wfc);
+    if (!cell)
+        return; // all cells are collapsed
+
+    wfc_collapse_cell(wfc, cell);
+
+    grid_update(&wfc->grid, wfc->tiles, wfc->num_tiles);
 }

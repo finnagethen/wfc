@@ -23,7 +23,9 @@ list_s* list_alloc(void) {
  *
  * @param list a 'list_s' element
  **/
-void list_free1(list_s* list) { free(list); }
+void list_free1(list_s* list) { 
+    free(list); 
+}
 
 /**
  * @func list_free

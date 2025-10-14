@@ -7,6 +7,7 @@
 
 typedef struct cell {
     list_s* possible_tile_ids;
+    int entropy;
     bool is_collapsed;
 } cell_s;
 

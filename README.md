@@ -14,7 +14,7 @@ make
 - [x] Create adjacency rules
 - [ ] Actually implement the wfc algorithm
 - [ ] Add rotation, reflection 
-- [ ] Optimize with frequency count
+- [ ] Optimize with frequency count etc.
 - [ ] Add edge options (e.g. border, wrap-around)
 
 ## Bugs

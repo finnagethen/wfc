@@ -24,4 +24,5 @@ typedef struct wfc_desc {
 
 void wfc_init(wfc_s* wfc, const wfc_desc_s* desc);
 void wfc_deinit(wfc_s* wfc);
+void wfc_update(wfc_s* wfc);
 
