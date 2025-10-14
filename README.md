@@ -16,3 +16,6 @@ make
 - [ ] Add rotation, reflection 
 - [ ] Optimize with frequency count
 - [ ] Add edge options (e.g. border, wrap-around)
+
+## Bugs
+- [ ] Getting border if pattern size does not divide output size evenly

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+#include <stdbool.h>
 #include "tile.h"
 #include "grid.h"
 
@@ -8,6 +9,7 @@ typedef struct wfc {
     SDL_Surface* input_surface;
 
     grid_s grid;
+
     tile_s* tiles;
     size_t num_tiles;
     int tile_size;
